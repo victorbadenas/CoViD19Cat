@@ -11,25 +11,34 @@ class DataRetriever:
         self.args = args
         self.client = Socrata("analisi.transparenciacatalunya.cat", None)
         self.dataId = "623z-r97q"
+        self.savePath = self.createSavePath()
 
     def __call__(self):
-        data = self.retrieveData(self.dataId)
-        data['date'] = data['date'].apply(lambda x: x.split('T')[0].replace('2020-', ''))
-        self.saveData(data, self.dataId)
+        if self.savePath.exists():
+            data = self.loadPreviousCsv()
+        else:
+            data =  self.retrieveData(self.dataId)
+            self.saveData(data, self.dataId)
         return data.set_index('date')
 
     def retrieveData(self, dataId):
         data = pd.DataFrame.from_records(self.client.get(dataId, limit=2000))
         data['date'] = data['data']
         data = data.drop('data', axis=1)
+        data['date'] = data['date'].apply(lambda x: x.split('T')[0].replace('2020-', ''))
         return data
 
-    def saveData(self, data, dataId):
-        date = datetime.datetime.now()
-        dataPath = Path(f"data/{dataId}/")
-        dataPath.mkdir(parents=True, exist_ok=True)
-        data.to_csv(dataPath / f"{date.strftime('%Y-%m-%d')}.csv", index=False)
+    def saveData(self, data):
+        data.to_csv(self.savePath)
 
+    def loadPreviousCsv(self):
+        return pd.read_csv(self.savePath)
+
+    def createSavePath(self):
+        date = datetime.datetime.now()
+        dataPath = Path(f"data/{self.dataId}/")
+        dataPath.mkdir(parents=True, exist_ok=True)
+        return dataPath / f"{date.strftime('%Y-%m-%d')}.csv"
 
 def ParseArgumentsFromCommandLine():
     parser = argparse.ArgumentParser()
