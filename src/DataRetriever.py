@@ -7,10 +7,9 @@ from pathlib import Path
 from sodapy import Socrata
 
 class DataRetriever:
-    def __init__(self, args):
-        self.args = args
+    def __init__(self, dataId:str):
         self.client = Socrata("analisi.transparenciacatalunya.cat", None)
-        self.dataId = "623z-r97q"
+        self.dataId = dataId
         self.savePath = self.createSavePath()
 
     def __call__(self):

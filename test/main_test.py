@@ -8,7 +8,7 @@ class MainArgs:
         self.__dict__ = attrDict
 
 class MainTests(unittest.TestCase):
-    mainArgs = MainArgs({"show": False})
+    mainArgs = MainArgs({"show": False, "ids": ["623z-r97q", "jj6z-iyrp"]})
 
     def test_main(self):
         try:
