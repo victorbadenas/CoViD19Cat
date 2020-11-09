@@ -18,7 +18,7 @@ class DataRetriever:
             data = self.loadPreviousCsv()
         else:
             data =  self.retrieveData(self.dataId)
-            self.saveData(data, self.dataId)
+            self.saveData(data)
         return data.set_index('date')
 
     def retrieveData(self, dataId):
