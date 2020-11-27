@@ -12,6 +12,6 @@ def set_logger(log_file_path, debug=False):
     logging.getLogger().addHandler(consoleHandler)
 
 def show_parameters(parameters):
-    logging.info("Training with parameters:")
+    logging.info("Called with parameters:")
     for label, value in parameters.__dict__.items():
-        logging.info(f"{label}: {value}")
+        logging.info(f"\t{label}: {value}")
