@@ -7,6 +7,10 @@ from pathlib import Path
 from sodapy import Socrata
 
 class DataRetriever:
+
+    MAX_TRIES = 3
+    SOCRATA_LIMIT = int(1e6)
+
     def __init__(self, dataId:str):
         self.client = Socrata("analisi.transparenciacatalunya.cat", None)
         self.dataId = dataId
@@ -18,20 +22,31 @@ class DataRetriever:
         else:
             data =  self.retrieveData(self.dataId)
             self.saveData(data)
-        return data.set_index('date')
+        return data
 
     def retrieveData(self, dataId):
-        data = pd.DataFrame.from_records(self.client.get(dataId, limit=2000))
+        data = pd.DataFrame.from_records(self.client.get(dataId, limit=self.SOCRATA_LIMIT))
+        limit = self.SOCRATA_LIMIT
+        for _ in range(self.MAX_TRIES):
+            # data retrieved has been truncated, agument limit
+            limit *= 10
+            data = pd.DataFrame.from_records(self.client.get(dataId, limit=limit))
+            if len(data) != limit:
+                break
+        else:
+            raise ValueError(f"full data has not been retrieved. Only {len(data)} lines")
+
         data['date'] = data['data']
         data = data.drop('data', axis=1)
         data['date'] = data['date'].apply(lambda x: x.split('T')[0].replace('2020-', ''))
+        data = data.set_index('date')
         return data
 
     def saveData(self, data):
         data.to_csv(self.savePath)
 
     def loadPreviousCsv(self):
-        return pd.read_csv(self.savePath)
+        return pd.read_csv(self.savePath, index_col=0)
 
     def createSavePath(self):
         date = datetime.datetime.now()
