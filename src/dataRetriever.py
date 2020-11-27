@@ -24,7 +24,7 @@ class DataRetriever:
         if self.savePath.exists():
             data = self.loadPreviousCsv()
         else:
-            data =  self.retrieveData(self.dataId)
+            data = self.retrieveData(self.dataId)
             self.saveData(data)
         return data
 
