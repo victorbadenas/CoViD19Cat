@@ -1,10 +1,14 @@
 import os
 import sys
 import argparse
+import logging
+import warnings
 import pandas as pd
 import datetime
 from pathlib import Path
+# warnings.filterwarnings(action='ignore', module='sodapy')
 from sodapy import Socrata
+
 
 class DataRetriever:
 
@@ -28,14 +32,16 @@ class DataRetriever:
         data = pd.DataFrame.from_records(self.client.get(dataId, limit=self.SOCRATA_LIMIT))
         limit = self.SOCRATA_LIMIT
         for _ in range(self.MAX_TRIES):
-            # data retrieved has been truncated, agument limit
-            limit *= 10
-            data = pd.DataFrame.from_records(self.client.get(dataId, limit=limit))
             if len(data) != limit:
                 break
+            logging.info(f"tried retrieving {limit} lines but the whoile dataset was not retrieved")
+            limit *= 10
+            logging.info(f"limit augmented to {limit}")
+            data = pd.DataFrame.from_records(self.client.get(dataId, limit=limit))
         else:
-            raise ValueError(f"full data has not been retrieved. Only {len(data)} lines")
+            raise logging.warning(f"full data has not been retrieved. Only {len(data)} lines")
 
+        logging.info(f'Retrieved data with {len(data)} lines')
         data['date'] = data['data']
         data = data.drop('data', axis=1)
         data['date'] = data['date'].apply(lambda x: x.split('T')[0].replace('2020-', ''))
@@ -43,9 +49,11 @@ class DataRetriever:
         return data
 
     def saveData(self, data):
+        logging.info(f"saving {self.dataId} data to {self.savePath}")
         data.to_csv(self.savePath)
 
     def loadPreviousCsv(self):
+        logging.info(f"reading previous data in {self.dataId} data from {self.savePath}")
         return pd.read_csv(self.savePath, index_col=0)
 
     def createSavePath(self):
