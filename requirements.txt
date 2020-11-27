@@ -1,4 +1,4 @@
 sodapy==2.1.0
-pandas==0.24.2
+pandas
 matplotlib
 numpy
