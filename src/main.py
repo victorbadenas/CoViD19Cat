@@ -13,7 +13,7 @@ def main(args):
 
 def ParseArgumentsFromCommandLine():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', '--ids', action="append", default=["xuwf-dxjd", "jj6z-iyrp"])
+    parser.add_argument('-i', '--ids', action="append", default=["xuwf-dxjd", "jj6z-iyrp", "uqk7-bf9s"])
     parser.add_argument('-s', '--show', action="store_true", default=False)
     parser.add_argument("-d", "--debug", action="store_true", default=False)
     parser.add_argument("--log_file", type=Path, default="./log/log.log")
