@@ -42,10 +42,10 @@ class DataRetriever:
             raise logging.warning(f"full data has not been retrieved. Only {len(data)} lines")
 
         logging.info(f'Retrieved data with {len(data)} lines')
-        data['date'] = data['data']
-        data = data.drop('data', axis=1)
+        dateColumn = 'data' if 'data' in data.columns else 'exitusdata'
+        data['date'] = data[dateColumn]
+        data = data.drop(dateColumn, axis=1)
         data['date'] = data['date'].apply(lambda x: x.split('T')[0].replace('2020-', ''))
-        data = data.set_index('date')
         return data
 
     def saveData(self, data):
