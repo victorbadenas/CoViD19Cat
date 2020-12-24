@@ -1,4 +1,4 @@
-# CoViD19Cat
+# CoViD19Cat  :mask: 
 
 https://analisi.transparenciacatalunya.cat/browse?q=covid&sortBy=relevance
 
