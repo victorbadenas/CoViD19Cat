@@ -1,15 +1,15 @@
 import argparse
-import logging
-import math
-import pandas as pd
 from pathlib import Path
-from dataRetriever import DataRetriever
-import matplotlib.pyplot as plt
-from utils import set_logger, show_parameters
+from src.dataRetriever import DataRetriever
+from src.utils import set_logger, show_parameters
+from src.dataPreprocessor import preprocessData
 
 def main(args):
+    prep_data = []
     for dataId in args.ids:
         data = DataRetriever(dataId)()
+        prep_data.append(preprocessData(data, dataId))
+
 
 def ParseArgumentsFromCommandLine():
     parser = argparse.ArgumentParser()
