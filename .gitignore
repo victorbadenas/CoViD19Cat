@@ -131,3 +131,6 @@ dmypy.json
 
 data/
 images/
+.idea/
+.vscode/
+
