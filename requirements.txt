@@ -3,3 +3,4 @@ sodapy==2.1.0
 pandas
 matplotlib
 numpy
+unidecode
