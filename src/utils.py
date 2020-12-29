@@ -34,7 +34,11 @@ def cvEvaluateModel(X, Y, model, return_last_fitted=True):
 
         model.fit(xTrain, yTrain)
         foldPrediction = model.predict(xTest)
-        
+
+        if len(foldPrediction.shape) == 1 and len(yTest.shape) == 1:
+            foldPrediction = foldPrediction.reshape(-1, 1)
+            yTest = yTest.reshape(-1, 1)
+
         foldMse = list(map(lambda i: mean_squared_error(foldPrediction[:, i], yTest[:, i]), range(yTest.shape[1])))
         foldR2 = list(map(lambda i: r2_score(foldPrediction[:, i], yTest[:, i]), range(yTest.shape[1])))
         foldMaxError = list(map(lambda i: max_error(foldPrediction[:, i], yTest[:, i]), range(yTest.shape[1])))
