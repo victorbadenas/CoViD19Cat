@@ -19,11 +19,9 @@ def main(args):
 
     X = data[:-1]
     Y = data[:,[0,1,-1]][1:]
-    xTrain, xTest, yTrain, yTest = train_test_split(X, Y, test_size=.1)
-    logging.info(f"{xTrain.shape}, {yTrain.shape}, {xTest.shape}, {yTest.shape}")
 
-    infectedMlpPred, deathsMlpPred, r0MlpPred, bestMlpParams = findBestRF(X, Y, xTrain, xTest, yTrain, yTest)
-    #infectedMlpPred, deathsMlpPred, r0MlpPred, bestMlpParams = findBestMlp(X, Y, xTrain, xTest, yTrain, yTest)
+    #infectedMlpPred, deathsMlpPred, r0MlpPred, bestMlpParams, mlpMetrics = findBestRF(X, Y)
+    infectedMlpPred, deathsMlpPred, r0MlpPred, bestMlpParams, mlpMetrics = findBestMlp(X, Y)
     
     f, ax = plt.subplots(3, 1, sharex=True, figsize=(10, 7))
 
