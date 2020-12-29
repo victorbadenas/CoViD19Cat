@@ -22,8 +22,8 @@ def main(args):
     xTrain, xTest, yTrain, yTest = train_test_split(X, Y, test_size=.1)
     logging.info(f"{xTrain.shape}, {yTrain.shape}, {xTest.shape}, {yTest.shape}")
 
-    #findBestRF(X, Y, xTrain, xTest, yTrain, yTest)
-    infectedMlpPred, deathsMlpPred, r0MlpPred, bestMlpParams = findBestMlp(X, Y, xTrain, xTest, yTrain, yTest)
+    infectedMlpPred, deathsMlpPred, r0MlpPred, bestMlpParams = findBestRF(X, Y, xTrain, xTest, yTrain, yTest)
+    #infectedMlpPred, deathsMlpPred, r0MlpPred, bestMlpParams = findBestMlp(X, Y, xTrain, xTest, yTrain, yTest)
     
     f, ax = plt.subplots(3, 1, sharex=True, figsize=(10, 7))
 
