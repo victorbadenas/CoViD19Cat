@@ -1,13 +1,13 @@
 import argparse
+import logging
 from pathlib import Path
 from dataRetriever import DataRetriever
 from utils import set_logger, show_parameters
 from dataPreprocessor import preprocessData
 from dataPreprocessor import normalizeData
 from sklearn.model_selection import train_test_split
-from models.mlp import findBestMlp
-import logging
 import matplotlib.pyplot as plt
+from models import *
 
 def main(args):
     prep_data = []
@@ -22,6 +22,7 @@ def main(args):
     xTrain, xTest, yTrain, yTest = train_test_split(X, Y, test_size=.1)
     logging.info(f"{xTrain.shape}, {yTrain.shape}, {xTest.shape}, {yTest.shape}")
 
+    #findBestRF(X, Y, xTrain, xTest, yTrain, yTest)
     infectedMlpPred, deathsMlpPred, r0MlpPred, bestMlpParams = findBestMlp(X, Y, xTrain, xTest, yTrain, yTest)
     
     f, ax = plt.subplots(3, 1, sharex=True, figsize=(10, 7))
@@ -47,13 +48,11 @@ def main(args):
     plt.xticks(range(0, len(dates[1:]), 7), dates[1::7], rotation=90)
     plt.show()
 
-    return
-
 
 def ParseArgumentsFromCommandLine():
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--ids', action="append", default=["jj6z-iyrp", "uqk7-bf9s"])
-    parser.add_argument('-s', '--show', action="store_true", default=False)
+    #parser.add_argument('-s', '--show', action="store_true", default=False)
     parser.add_argument("-d", "--debug", action="store_true", default=False)
     parser.add_argument("--log_file", type=Path, default="./log/log.log")
     return parser.parse_args()
