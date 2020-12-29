@@ -1,6 +1,7 @@
 import numpy as np
 import unidecode
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer
+import logging
 
 def createPivotTable(data, newdf, id, tag):
     columns = []
@@ -49,7 +50,7 @@ def addRo(rodf, newdf):
     return newdf
 
 def preprocessData(infectionData, deathData):
-    print("*************************** Preprocessing Data COVID-19 ***************************")
+    logging.info("Preprocessing Data COVID-19".center(80, '*'))
 
     infectionData['numcasos'][infectionData['resultatcoviddescripcio'] == 'Sospitós'] = 0.0
     infections = infectionData[['date', 'numcasos']].set_index('date').groupby('date').sum()

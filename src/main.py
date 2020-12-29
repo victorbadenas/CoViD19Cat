@@ -6,10 +6,12 @@ from dataPreprocessor import preprocessData
 from dataPreprocessor import normalizeData
 from sklearn.model_selection import train_test_split
 from models.mlp import findBestMlp
+import logging
+import matplotlib.pyplot as plt
 
 def main(args):
     prep_data = []
-    print("********************   Downloading data from ID: "+args.ids[0]+"   ********************")
+    logging.info(f"Downloading data from ID: {args.ids[0]}".center(80, '*'))
     data_pos = DataRetriever(args.ids[0])()
     data_death = DataRetriever(args.ids[1])()
     dataset = preprocessData(data_pos, data_death)
@@ -18,9 +20,33 @@ def main(args):
     X = data[:-1]
     Y = data[:,[0,1,-1]][1:]
     xTrain, xTest, yTrain, yTest = train_test_split(X, Y, test_size=.1)
-    print(xTrain.shape, yTrain.shape, xTest.shape, yTest.shape)
+    logging.info(f"{xTrain.shape}, {yTrain.shape}, {xTest.shape}, {yTest.shape}")
 
-    # findBestMlp(X, Y, xTrain, xTest, yTrain, yTest)
+    infectedMlpPred, deathsMlpPred, r0MlpPred, bestMlpParams = findBestMlp(X, Y, xTrain, xTest, yTrain, yTest)
+    
+    f, ax = plt.subplots(3, 1, sharex=True, figsize=(10, 7))
+
+    ax[0].plot(infectedMlpPred, c='r', label='mlp_predicted')
+    ax[0].plot(Y[:, 0], c='b', label='truth')
+    ax[0].set_ylabel('num_infected')
+    ax[0].grid('on')
+    ax[0].legend()
+
+    ax[1].plot(deathsMlpPred, c='r', label='mlp_predicted')
+    ax[1].plot(Y[:, 1], c='b', label='truth')
+    ax[1].set_ylabel('num_deaths')
+    ax[1].grid('on')
+    ax[1].legend()
+
+    ax[2].plot(r0MlpPred, c='r', label='mlp_predicted')
+    ax[2].plot(Y[:, 2], c='b', label='truth')
+    ax[2].set_ylabel('R0')
+    ax[2].grid('on')
+    ax[2].legend()
+
+    plt.xticks(range(0, len(dates[1:]), 7), dates[1::7], rotation=90)
+    plt.show()
+
     return
 
 
