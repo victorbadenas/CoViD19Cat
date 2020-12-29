@@ -20,24 +20,31 @@ def main(args):
     X = data[:-1]
     Y = data[:,[0,1,-1]][1:]
 
-    #infectedMlpPred, deathsMlpPred, r0MlpPred, bestMlpParams, mlpMetrics = findBestRF(X, Y)
+    infectedRfPred, deathsRfPred, r0RfPred, bestRfParams, rfMetrics = findBestRF(X, Y)
     infectedMlpPred, deathsMlpPred, r0MlpPred, bestMlpParams, mlpMetrics = findBestMlp(X, Y)
-    
+    infectedAdaPred, deathsAdaPred, r0AdaPred, adaMetrics = findBestAda(X, Y)
+
     f, ax = plt.subplots(3, 1, sharex=True, figsize=(10, 7))
 
-    ax[0].plot(infectedMlpPred, c='r', label='mlp_predicted')
+    ax[0].plot(infectedRfPred, c='r', label='rf_predicted')
+    ax[0].plot(infectedMlpPred, c='g', label='mlp_predicted')
+    ax[0].plot(infectedAdaPred, c='k', label='ada_predicted')
     ax[0].plot(Y[:, 0], c='b', label='truth')
     ax[0].set_ylabel('num_infected')
     ax[0].grid('on')
     ax[0].legend()
 
-    ax[1].plot(deathsMlpPred, c='r', label='mlp_predicted')
+    ax[1].plot(deathsRfPred, c='r', label='rf_predicted')
+    ax[1].plot(deathsMlpPred, c='g', label='mlp_predicted')
+    ax[1].plot(deathsAdaPred, c='k', label='ada_predicted')
     ax[1].plot(Y[:, 1], c='b', label='truth')
     ax[1].set_ylabel('num_deaths')
     ax[1].grid('on')
     ax[1].legend()
 
-    ax[2].plot(r0MlpPred, c='r', label='mlp_predicted')
+    ax[2].plot(r0RfPred, c='r', label='rf_predicted')
+    ax[2].plot(r0MlpPred, c='g', label='mlp_predicted')
+    ax[2].plot(r0AdaPred, c='k', label='ada_predicted')
     ax[2].plot(Y[:, 2], c='b', label='truth')
     ax[2].set_ylabel('R0')
     ax[2].grid('on')
