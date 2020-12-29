@@ -1,20 +1,24 @@
 import argparse
 from pathlib import Path
-from src.dataRetriever import DataRetriever
-from src.utils import set_logger, show_parameters
-from src.dataPreprocessor import preprocessData
-from src.dataPreprocessor import normalizeData
+from dataRetriever import DataRetriever
+from utils import set_logger, show_parameters
+from dataPreprocessor import preprocessData
+from dataPreprocessor import normalizeData
+from sklearn.model_selection import train_test_split
 
 def main(args):
     prep_data = []
     print("********************   Downloading data from ID: "+args.ids[0]+"   ********************")
     data_pos = DataRetriever(args.ids[0])()
     data_death = DataRetriever(args.ids[1])()
-
     dataset = preprocessData(data_pos, data_death)
-
     data, dates = normalizeData(dataset)
 
+    X = data[:-1]
+    Y = data[:,[0,1,-1]][1:]
+    xTrain, xTest, yTrain, yTest = train_test_split(X, Y, test_size=.1)
+    print(xTrain.shape, yTrain.shape, xTest.shape, yTest.shape)
+    return
 
 
 def ParseArgumentsFromCommandLine():
