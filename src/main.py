@@ -5,6 +5,7 @@ from utils import set_logger, show_parameters
 from dataPreprocessor import preprocessData
 from dataPreprocessor import normalizeData
 from sklearn.model_selection import train_test_split
+from models.mlp import findBestMlp
 
 def main(args):
     prep_data = []
@@ -18,6 +19,8 @@ def main(args):
     Y = data[:,[0,1,-1]][1:]
     xTrain, xTest, yTrain, yTest = train_test_split(X, Y, test_size=.1)
     print(xTrain.shape, yTrain.shape, xTest.shape, yTest.shape)
+
+    # findBestMlp(X, Y, xTrain, xTest, yTrain, yTest)
     return
 
 
