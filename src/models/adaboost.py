@@ -1,6 +1,6 @@
 from sklearn.ensemble import AdaBoostRegressor
 from sklearn.model_selection import GridSearchCV
-from utils import cvEvaluateModel
+from src.utils import cvEvaluateModel
 import logging
 
 def findBestAda(X, Y):
