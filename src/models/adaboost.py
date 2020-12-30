@@ -18,7 +18,7 @@ def findBestAda(X, Y):
         joinedMetrics['r2'].append(metrics[i]['r2'][0])
         joinedMetrics['max_e'].append(metrics[i]['max_e'][0])
 
-    return *predicted_arrays, joinedMetrics
+    return (*predicted_arrays, joinedMetrics)
 
 def findBestAdaForGivenOutput(X, Y):
     n_estimators = [150, 200, 500]
