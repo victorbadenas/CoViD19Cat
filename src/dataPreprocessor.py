@@ -71,28 +71,43 @@ def preprocessData(infectionData, deathData):
 
     return newdf
 
-def normalizeData(newdf):
-    positiveScaler = MinMaxScaler(feature_range=(0, .5))
-    deathsScaler = MinMaxScaler(feature_range=(0, .5))
-    positiveHistScaler = MinMaxScaler(feature_range=(0, .5)).fit(newdf.to_numpy()[:, 2:44].flatten()[:, None])
-    deathsHistScaler = MinMaxScaler(feature_range=(0, .5)).fit(newdf.to_numpy()[:, 44:87].flatten()[:, None])
-    positiveSexHistScaler = MinMaxScaler(feature_range=(0, .5)).fit(newdf.to_numpy()[:, 87:89].flatten()[:, None])
-    deathsSexHistScaler = MinMaxScaler(feature_range=(0, .5)).fit(newdf.to_numpy()[:, 89:91].flatten()[:, None])
-    r0Scaler = MinMaxScaler(feature_range=(0, .5))
 
-    newdf['numcasos'] = positiveScaler.fit_transform(newdf['numcasos'].to_numpy().reshape(-1, 1))
-    newdf['numexitus'] = deathsScaler.fit_transform(newdf['numexitus'].to_numpy().reshape(-1, 1))
-    newdf['R0'] = r0Scaler.fit_transform(newdf['R0'].to_numpy().reshape(-1, 1))
-    for column in newdf.columns[2:44]:
-        newdf[column] = positiveHistScaler.transform(newdf[column].to_numpy().reshape(-1, 1))
-    for column in newdf.columns[44:87]:
-        newdf[column] = deathsHistScaler.transform(newdf[column].to_numpy().reshape(-1, 1))
-    for column in newdf.columns[87:89]:
-        newdf[column] = positiveSexHistScaler.transform(newdf[column].to_numpy().reshape(-1, 1))
-    for column in newdf.columns[89:91]:
-        newdf[column] = deathsSexHistScaler.transform(newdf[column].to_numpy().reshape(-1, 1))
+class customNormalizer:
 
-    data = newdf.to_numpy()
-    dates = newdf.index.to_list()
+    def normalizeData(self, newdf):
+        self.positiveScaler = MinMaxScaler(feature_range=(0, .5))
+        self.deathsScaler = MinMaxScaler(feature_range=(0, .5))
+        positiveHistScaler = MinMaxScaler(feature_range=(0, .5)).fit(newdf.to_numpy()[:, 2:44].flatten()[:, None])
+        deathsHistScaler = MinMaxScaler(feature_range=(0, .5)).fit(newdf.to_numpy()[:, 44:87].flatten()[:, None])
+        positiveSexHistScaler = MinMaxScaler(feature_range=(0, .5)).fit(newdf.to_numpy()[:, 87:89].flatten()[:, None])
+        deathsSexHistScaler = MinMaxScaler(feature_range=(0, .5)).fit(newdf.to_numpy()[:, 89:91].flatten()[:, None])
+        self.r0Scaler = MinMaxScaler(feature_range=(0, .5))
 
-    return data, dates
+        newdf['numcasos'] = self.positiveScaler.fit_transform(newdf['numcasos'].to_numpy().reshape(-1, 1))
+        newdf['numexitus'] = self.deathsScaler.fit_transform(newdf['numexitus'].to_numpy().reshape(-1, 1))
+        newdf['R0'] = self.r0Scaler.fit_transform(newdf['R0'].to_numpy().reshape(-1, 1))
+        for column in newdf.columns[2:44]:
+            newdf[column] = positiveHistScaler.transform(newdf[column].to_numpy().reshape(-1, 1))
+        for column in newdf.columns[44:87]:
+            newdf[column] = deathsHistScaler.transform(newdf[column].to_numpy().reshape(-1, 1))
+        for column in newdf.columns[87:89]:
+            newdf[column] = positiveSexHistScaler.transform(newdf[column].to_numpy().reshape(-1, 1))
+        for column in newdf.columns[89:91]:
+            newdf[column] = deathsSexHistScaler.transform(newdf[column].to_numpy().reshape(-1, 1))
+
+        data = newdf.to_numpy()
+        dates = newdf.index.to_list()
+
+        return data, dates
+
+    def inverse_transform(self, positive, deaths, r0):
+        if len(positive.shape) == 1:
+            positive = positive.reshape(-1, 1)
+        if len(deaths.shape) == 1:
+            deaths = deaths.reshape(-1, 1)
+        if len(r0.shape) == 1:
+            r0 = r0.reshape(-1, 1)
+        positive = self.positiveScaler.inverse_transform(positive)
+        deaths = self.deathsScaler.inverse_transform(deaths)
+        r0 = self.r0Scaler.inverse_transform(r0)
+        return positive, deaths, r0
