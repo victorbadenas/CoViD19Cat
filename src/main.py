@@ -1,12 +1,12 @@
 import argparse
 import logging
 from pathlib import Path
-from src.dataRetriever import DataRetriever
-from src.utils import set_logger, show_parameters
-from src.dataPreprocessor import preprocessData, normalizeData
+from dataRetriever import DataRetriever
+from utils import set_logger, show_parameters
+from dataPreprocessor import preprocessData, normalizeData
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
-from src.models import findBestSVR, findBestRF, findBestMlp, findBestAda
+from models import findBestSVR, findBestRF, findBestMlp, findBestAda
 
 def main(args):
 
@@ -19,13 +19,10 @@ def main(args):
     X = data[:-1]
     Y = data[:,[0,1,-1]][1:]
 
-
     infectedSvrPred, deathsSvrPred, r0SvrPred, svrMetrics = findBestSVR(X, Y)
     infectedAdaPred, deathsAdaPred, r0AdaPred, adaMetrics = findBestAda(X, Y)
     infectedRfPred, deathsRfPred, r0RfPred, bestRfParams, rfMetrics = findBestRF(X, Y)
     infectedMlpPred, deathsMlpPred, r0MlpPred, bestMlpParams, mlpMetrics = findBestMlp(X, Y)
-
-
 
     f, ax = plt.subplots(3, 1, sharex=True, figsize=(10, 7))
 

@@ -7,9 +7,11 @@ import numpy as np
 
 def findBestMlp(X, Y):
 
-    hiddenSizes = list(product([5, 8, 10], [5, 8, 10]))
-    hiddenSizes += [(5,), (8,), (10,)]
+    hiddenSizes = list(product([5, 8, 10, 30, 50], [5, 8, 10, 30, 50]))
+    hiddenSizes += [(5,), (8,), (10,), (30,), (50,)]
     learning_rate = ['constant', 'invscaling', 'adaptive']
+    solver = ['sgd', 'adam']
+    power_t = [.5, .3, .1]
     params = dict(hidden_layer_sizes=hiddenSizes,
                   learning_rate=learning_rate)
 
@@ -19,7 +21,7 @@ def findBestMlp(X, Y):
                         n_jobs=-1,
                         cv=10,
                         refit=False,
-                        verbose=2)
+                        verbose=1)
     mlpcv = mlpcv.fit(X, Y)
     best_params = mlpcv.best_params_
 

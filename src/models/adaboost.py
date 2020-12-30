@@ -30,7 +30,7 @@ def findBestAdaForGivenOutput(X, Y):
                         n_jobs=-1,
                         cv=10,
                         refit=False,
-                        verbose=2)
+                        verbose=1)
     adacv = adacv.fit(X, Y)
     best_params = adacv.best_params_
 

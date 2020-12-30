@@ -1,6 +1,6 @@
 from sklearn.svm import SVR
 from sklearn.model_selection import GridSearchCV
-from src.utils import cvEvaluateModel
+from utils import cvEvaluateModel
 import logging
 
 
@@ -29,7 +29,7 @@ def findBestSVRForGivenOutput(X, Y):
                         n_jobs=-1,
                         cv=10,
                         refit=False,
-                        verbose=2)
+                        verbose=1)
     svr = svr.fit(X, Y)
     best_params = svr.best_params_
 
