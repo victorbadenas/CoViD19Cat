@@ -4,3 +4,5 @@ pandas
 matplotlib
 numpy
 unidecode
+tensorflow
+keras
