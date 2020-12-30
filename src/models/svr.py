@@ -1,6 +1,6 @@
 from sklearn.svm import SVR
 from sklearn.model_selection import GridSearchCV
-from utils import cvEvaluateModel
+from src.utils import cvEvaluateModel
 import logging
 
 
@@ -22,7 +22,7 @@ def findBestSVR(X, Y):
     return (*predicted_arrays, joinedMetrics)
 
 def findBestSVRForGivenOutput(X, Y):
-    params = {'C': [1.0, 5.0, 10.0, 15.0, 20.0], 'kernel': ['rbf', 'linear', 'poly'], 'degree': [1, 2, 3, 4, 5, 10]}
+    params = {'C': [1.0, 2.0, 4.0, 6.0, 8.0, 10.0], 'gamma': ['scale','auto'] ,'kernel': ['rbf', 'linear', 'poly', 'sigmoid'], 'degree': [1, 2, 3, 4, 5, 10]}
     svr = GridSearchCV(SVR(),
                         params,
                         scoring='neg_mean_squared_error',
