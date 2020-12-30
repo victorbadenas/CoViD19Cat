@@ -13,11 +13,14 @@ def createPivotTable(data, newdf, id, tag):
 
     databyRegion = data[columns].dropna()
 
-    if id == 0 or id == 1:
+    if id == 0 or id == 2:
         databyRegion['numcasos'] = databyRegion['numcasos'].apply(int)
+    else:
+        databyRegion['numexitus'] = databyRegion['numexitus'].apply(int)
+
+    if id == 0 or id == 1:
         databyRegion = databyRegion.pivot_table(index=['date'], columns='comarcadescripcio', aggfunc=sum).fillna(0.0)
     if id > 1:
-        databyRegion['numexitus'] = databyRegion['numexitus'].apply(int)
         databyRegion = databyRegion.pivot_table(index=['date'], columns='sexedescripcio',aggfunc=sum).fillna(0.0)
     if id == 0 or id == 2:
         databyRegion = databyRegion['numcasos']
