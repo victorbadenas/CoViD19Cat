@@ -15,3 +15,13 @@ https://www.sciencedirect.com/science/article/pii/S0960077920304562
 
 - token: uqk7-bf9s
 - URL: https://analisi.transparenciacatalunya.cat/Salut/Registre-de-defuncions-per-COVID-19-a-Catalunya-Se/uqk7-bf9s
+
+## Requirements
+
+- Python >3.6
+- scikit-learn
+- sodapy==2.1.0
+- pandas
+- matplotlib
+- numpy
+- unidecode
