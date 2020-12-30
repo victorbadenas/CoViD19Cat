@@ -19,10 +19,10 @@ def findBestSVR(X, Y):
         joinedMetrics['r2'].append(metrics[i]['r2'][0])
         joinedMetrics['max_e'].append(metrics[i]['max_e'][0])
 
-    return predicted_arrays[:, 0], predicted_arrays[:, 1], predicted_arrays[:, 2], best_params, joinedMetrics
+    return (*predicted_arrays, joinedMetrics)
 
 def findBestSVRForGivenOutput(X, Y):
-    params = {'C': [1.0, 10.0, 100.0], 'kernel': ['rbf', 'linear', 'poly'], 'degree': [2, 3, 4, 5]}
+    params = {'C': [1.0, 5.0, 10.0, 15.0, 20.0], 'kernel': ['rbf', 'linear', 'poly'], 'degree': [1, 2, 3, 4, 5, 10]}
     svr = GridSearchCV(SVR(),
                         params,
                         scoring='neg_mean_squared_error',
@@ -43,3 +43,4 @@ def findBestSVRForGivenOutput(X, Y):
     logging.info(f"best model with metrics: {metrics}")
 
     return allprediction, best_params, metrics
+
