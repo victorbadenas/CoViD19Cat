@@ -1,6 +1,6 @@
 from sklearn.svm import SVR
 from sklearn.model_selection import GridSearchCV
-from src.utils import cvEvaluateModel
+from utils import cvEvaluateModel
 import logging
 
 
