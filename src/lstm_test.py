@@ -2,13 +2,17 @@ import tensorflow as tf
 import keras
 import numpy as np
 import pandas as pd
+from keras import Input, Model
 from keras.models import Sequential
-from tensorflow.keras import Input, Model
 from keras.layers import Dense
 from keras.layers import LSTM, Bidirectional, GRU
 from dataRetriever import DataRetriever
 from dataPreprocessor import preprocessData, customNormalizer
 from augmentData import augmentData
+
+from sklearn.model_selection import KFold
+from sklearn.metrics import mean_squared_error, r2_score, max_error
+import tqdm
 
 data_pos = pd.read_csv('data/jj6z-iyrp/2020-12-30.csv', index_col=0)
 data_death = pd.read_csv('data/uqk7-bf9s/2020-12-30.csv', index_col=0)
@@ -59,26 +63,15 @@ def correlation_coefficient_loss(y_true, y_pred):
     r = K.maximum(K.minimum(r, 1.0), -1.0)
     return 1 - K.square(r)
 
-# def r0_loss(y_true, y_pred):
-#     return tf.keras.losses.MSE(y_true, y_pred)
-
 X, Y = augmentData(X, Y)
 
-X.shape, Y.shape
-
+print(X.shape, Y.shape)
 
 def create_model():
     inp = Input((look_back, 92))
-
-    # lstm = GRU(64, input_shape=(look_back, 92))(inp)
-    # lstm = Bidirectional(GRU(64), input_shape=(look_back, 92))(inp)
-
     lstm = Bidirectional(LSTM(64), input_shape=(look_back, 92))(inp)
-
-    # lstm = Bidirectional(LSTM(64, return_sequences=True), input_shape=(look_back, 92))(inp)
-    # lstm = Bidirectional(LSTM(64, return_sequences=True))(inp)
-    # lstm = Bidirectional(LSTM(64))(lstm)
-    # emb = Dense(200)(lstm)
+    # lstm = LSTM(64, input_shape=(look_back, 92))(inp)
+    lstm = Dense(100, activation='relu')(lstm)
 
     pos = Dense(1, name='positive')(lstm)
     dea = Dense(1, name='deaths')(lstm)
@@ -86,9 +79,7 @@ def create_model():
     model = Model(inputs=inp, outputs=[pos, dea, r0])
     return model
 
-from sklearn.model_selection import KFold
-from sklearn.metrics import mean_squared_error, r2_score, max_error
-import tqdm
+
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 mse = []
 r2 = []
@@ -119,7 +110,7 @@ for train_index, test_index in tqdm.tqdm(kf.split(X)):
         'r0': tf.keras.losses.MeanSquaredError()
     }, optimizer=opt)
 
-    history = model.fit(xTrain, 
+    history = model.fit(xTrain,
                         {
                             'positive': yTrain[:, 0],
                             'deaths': yTrain[:, 1],
