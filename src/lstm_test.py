@@ -5,7 +5,7 @@ import pandas as pd
 from keras.models import Sequential
 from tensorflow.keras import Input, Model
 from keras.layers import Dense
-from keras.layers import LSTM
+from keras.layers import LSTM, Bidirectional, GRU
 from dataRetriever import DataRetriever
 from dataPreprocessor import preprocessData, customNormalizer
 from augmentData import augmentData
@@ -59,6 +59,9 @@ def correlation_coefficient_loss(y_true, y_pred):
     r = K.maximum(K.minimum(r, 1.0), -1.0)
     return 1 - K.square(r)
 
+# def r0_loss(y_true, y_pred):
+#     return tf.keras.losses.MSE(y_true, y_pred)
+
 X, Y = augmentData(X, Y)
 
 X.shape, Y.shape
@@ -66,11 +69,20 @@ X.shape, Y.shape
 
 def create_model():
     inp = Input((look_back, 92))
-    lstm = LSTM(16, input_shape=(look_back, 92))(inp)
-    emb = Dense(100)(lstm)
-    pos = Dense(1, name='positive')(emb)
-    dea = Dense(1, name='deaths')(emb)
-    r0 = Dense(1, name='r0')(emb)
+
+    # lstm = GRU(64, input_shape=(look_back, 92))(inp)
+    # lstm = Bidirectional(GRU(64), input_shape=(look_back, 92))(inp)
+
+    lstm = Bidirectional(LSTM(64), input_shape=(look_back, 92))(inp)
+
+    # lstm = Bidirectional(LSTM(64, return_sequences=True), input_shape=(look_back, 92))(inp)
+    # lstm = Bidirectional(LSTM(64, return_sequences=True))(inp)
+    # lstm = Bidirectional(LSTM(64))(lstm)
+    # emb = Dense(200)(lstm)
+
+    pos = Dense(1, name='positive')(lstm)
+    dea = Dense(1, name='deaths')(lstm)
+    r0 = Dense(1, name='r0')(lstm)
     model = Model(inputs=inp, outputs=[pos, dea, r0])
     return model
 
@@ -83,8 +95,16 @@ r2 = []
 max_e = []
 loss = []
 
-callbacks = [tf.keras.callbacks.ModelCheckpoint('best_model.h5', save_best_only=True, monitor='val_loss', mode='min'),
-            tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=5, restore_best_weights=True)]
+# callbacks = [tf.keras.callbacks.ModelCheckpoint('best_model.h5', save_best_only=True, monitor='val_loss', mode='min'),
+#             tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=5, restore_best_weights=True)]
+callbacks = [tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=5, restore_best_weights=True)]
+
+lr_schedule = keras.optimizers.schedules.ExponentialDecay(
+    initial_learning_rate=1e-2,
+    decay_steps=1000,
+    decay_rate=0.9)
+
+opt = keras.optimizers.Adam(learning_rate=lr_schedule)
 
 kf = KFold(10, random_state=0, shuffle=True)
 for train_index, test_index in tqdm.tqdm(kf.split(X)):
@@ -92,11 +112,13 @@ for train_index, test_index in tqdm.tqdm(kf.split(X)):
     xTest, yTest = X[test_index], Y[test_index]
     
     model = create_model()
+
     model.compile(loss={
         'positive': tf.keras.losses.MeanSquaredError(),
         'deaths': tf.keras.losses.MeanSquaredError(),
         'r0': tf.keras.losses.MeanSquaredError()
-    }, optimizer='adam')
+    }, optimizer=opt)
+
     history = model.fit(xTrain, 
                         {
                             'positive': yTrain[:, 0],
@@ -107,12 +129,14 @@ for train_index, test_index in tqdm.tqdm(kf.split(X)):
                             'positive': yTest[:, 0],
                             'deaths': yTest[:, 1],
                             'r0': yTest[:, 2]
-                        },), 
-                        epochs=100, 
-                        batch_size=10, 
-                        verbose=1, 
+                            },
+                        ),
+                        epochs=100,
+                        batch_size=10,
+                        verbose=1,
+                        shuffle=True,
                         callbacks=callbacks)
-    # model = keras.models.load_model('best_model.h5')
+
     y_pred = model.predict(xTest)
 
     y_pred = np.array(y_pred).squeeze(-1).transpose()
@@ -145,9 +169,9 @@ pred = model.predict(X[:X.shape[0]//3])
 pred = np.array(pred).squeeze(-1).transpose()
 truth = Y[:X.shape[0]//3]
 
+f, ax = plt.subplots(3, 1, figsize=(10, 6))
 for i in range(truth.shape[1]):
-    plt.figure(figsize=(15, 9))
-    plt.plot(pred[:,i], c='g')
-    plt.plot(truth[:, i], c='k')
-    plt.grid('on')
-    plt.show()
+    ax[i].plot(pred[:,i], c='g')
+    ax[i].plot(truth[:, i], c='k')
+    ax[i].grid('on')
+plt.show()
