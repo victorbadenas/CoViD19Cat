@@ -14,12 +14,25 @@ from sklearn.model_selection import KFold
 from sklearn.metrics import mean_squared_error, r2_score, max_error
 import tqdm
 
+import sys
+import os
+import shutil
+model_config = sys.argv[1]
+
+if not os.path.exists('./checkpoints/'):
+    os.mkdir('./checkpoints/')
+
+seed = 0  # np.random.randint(0, 100000)
+np.random.seed(seed)
+tf.random.set_seed(seed)
+
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+
 data_pos = pd.read_csv('data/jj6z-iyrp/2020-12-30.csv', index_col=0)
 data_death = pd.read_csv('data/uqk7-bf9s/2020-12-30.csv', index_col=0)
 dataset = preprocessData(data_pos, data_death)
 normalizer = customNormalizer()
 data, dates = normalizer.normalizeData(dataset)
-data.shape
 
 look_back = 8
 lstmdata = np.vstack((np.zeros((look_back, data.shape[1])), data))
@@ -29,8 +42,6 @@ for i in range(look_back):
     X.append(np.roll(lstmdata, i, axis=0))
 X = np.array(X).transpose((1,0,2))[look_back:-1]
 Y = np.array(Y)[look_back+1:]
-
-X.shape, Y.shape
 
 def augmentData(X:np.ndarray, Y:np.ndarray):
     assert X.shape[0] == Y.shape[0], "arrays are inconsistant. axis 0 must be of the same size"
@@ -65,13 +76,17 @@ def correlation_coefficient_loss(y_true, y_pred):
 
 X, Y = augmentData(X, Y)
 
-print(X.shape, Y.shape)
-
 def create_model():
     inp = Input((look_back, 92))
-    lstm = Bidirectional(LSTM(64), input_shape=(look_back, 92))(inp)
-    # lstm = LSTM(64, input_shape=(look_back, 92))(inp)
-    lstm = Dense(100, activation='relu')(lstm)
+    if 'blstm' in model_config:
+        lstm = Bidirectional(LSTM(64), input_shape=(look_back, 92))(inp)
+    elif 'lstm' in model_config:
+        lstm = LSTM(64, input_shape=(look_back, 92))(inp)
+    else:
+        raise ValueError('network type not supported')
+
+    if 'hidden' in model_config:
+        lstm = Dense(100, activation='relu')(lstm)
 
     pos = Dense(1, name='positive')(lstm)
     dea = Dense(1, name='deaths')(lstm)
@@ -79,30 +94,31 @@ def create_model():
     model = Model(inputs=inp, outputs=[pos, dea, r0])
     return model
 
-
-tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 mse = []
 r2 = []
 max_e = []
 loss = []
 
-# callbacks = [tf.keras.callbacks.ModelCheckpoint('best_model.h5', save_best_only=True, monitor='val_loss', mode='min'),
-#             tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=5, restore_best_weights=True)]
-callbacks = [tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=5, restore_best_weights=True)]
-
-lr_schedule = keras.optimizers.schedules.ExponentialDecay(
-    initial_learning_rate=1e-2,
-    decay_steps=1000,
-    decay_rate=0.9)
-
-opt = keras.optimizers.Adam(learning_rate=lr_schedule)
+callbacks = [tf.keras.callbacks.ModelCheckpoint(f'./checkpoints/{model_config}.h5', save_best_only=True, monitor='val_loss', mode='min'),
+            tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=20, restore_best_weights=True)]
+# callbacks = [tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=20, restore_best_weights=True)]
 
 kf = KFold(10, random_state=0, shuffle=True)
-for train_index, test_index in tqdm.tqdm(kf.split(X)):
+for foldIdx, (train_index, test_index) in enumerate(kf.split(X)):
+    print(f' fold {foldIdx} '.center(80, '-'))
     xTrain, yTrain = X[train_index], Y[train_index]
     xTest, yTest = X[test_index], Y[test_index]
-    
+
     model = create_model()
+    if foldIdx == 0:
+        model.summary()
+        default_weights = model.get_weights()
+    else:
+        model.set_weights(default_weights)
+
+    lr_schedule = keras.optimizers.schedules.ExponentialDecay(initial_learning_rate=1e-2, decay_steps=1000, decay_rate=0.9)
+
+    opt = keras.optimizers.Adam(learning_rate=lr_schedule)
 
     model.compile(loss={
         'positive': tf.keras.losses.MeanSquaredError(),
@@ -122,7 +138,7 @@ for train_index, test_index in tqdm.tqdm(kf.split(X)):
                             'r0': yTest[:, 2]
                             },
                         ),
-                        epochs=100,
+                        epochs=1000,
                         batch_size=10,
                         verbose=1,
                         shuffle=True,
@@ -140,13 +156,17 @@ for train_index, test_index in tqdm.tqdm(kf.split(X)):
     r2.append(foldR2)
     max_e.append(foldMaxError)
 
+    if mse[-1] == min(mse):
+        shutil.copy(f'./checkpoints/{model_config}.h5', f'./checkpoints/{model_config}.best.h5')
+
 mse = np.average(np.array(mse), axis=0)
 r2 = np.average(np.array(r2), axis=0)
 max_e = np.average(np.array(max_e), axis=0)
 
 metrics = {'mse':list(mse), 'r2':list(r2), 'max_e':list(max_e)}
 
-print(metrics)
+print('seed:', seed)
+print('metrics:', metrics)
 
 import matplotlib.pyplot as plt
 plt.figure(figsize=(15, 9))
@@ -154,6 +174,7 @@ for i, l in enumerate(loss):
     plt.plot(l, label=f'fold {i}')
 plt.grid('on')
 plt.legend()
+plt.savefig(f'../images/{model_config}.loss.png')
 plt.show()
 
 pred = model.predict(X[:X.shape[0]//3])
@@ -165,4 +186,5 @@ for i in range(truth.shape[1]):
     ax[i].plot(pred[:,i], c='g')
     ax[i].plot(truth[:, i], c='k')
     ax[i].grid('on')
+plt.savefig(f'../images/{model_config}.alldata.png')
 plt.show()
