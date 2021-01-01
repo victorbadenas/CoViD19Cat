@@ -88,10 +88,11 @@ date_list = list(map(lambda x: x.strftime("%Y-%m-%d"), date_list))
 y_labels = ['infected', 'deaths', 'R0']
 f, ax = plt.subplots(3, 1, figsize=(16, 9), sharex=True)
 for i in range(Y.shape[1]):
-    ax[i].plot(y_pred[:,i], c='g')
-    ax[i].plot(Y[:, i], c='k')
+    ax[i].plot(y_pred[:,i], c='g', label='predicted')
+    ax[i].plot(Y[:, i], c='k', linestyle='--', label='truth')
     ax[i].set_ylabel(y_labels[i])
     ax[i].grid('on')
+    ax[i].legend()
 plt.xticks(range(0, len(date_list[1:]), 7), date_list[1::7], rotation=90)
 plt.xlabel('date')
 plt.savefig(f'../images/{model_config}.{numdays}extension.png')
