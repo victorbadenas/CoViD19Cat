@@ -60,28 +60,16 @@ def augmentData(X:np.ndarray, Y:np.ndarray):
         Yextended = np.concatenate((Yextended, Y + Yrand))
     return Xextended, Yextended
 
-import tensorflow.keras.backend as K
-def correlation_coefficient_loss(y_true, y_pred):
-    x = y_true
-    y = y_pred
-    mx = K.mean(x)
-    my = K.mean(y)
-    xm, ym = x-mx, y-my
-    r_num = K.sum(tf.multiply(xm,ym))
-    r_den = K.sqrt(tf.multiply(K.sum(K.square(xm)), K.sum(K.square(ym))))
-    r = r_num / r_den
-
-    r = K.maximum(K.minimum(r, 1.0), -1.0)
-    return 1 - K.square(r)
-
 X, Y = augmentData(X, Y)
 
+# X = X[:,:,[0, 1, -1]]  # only the 3 predicted labels
+
 def create_model():
-    inp = Input((look_back, 92))
+    inp = Input((look_back, X.shape[2]))  # X.shape[2] is 92 by default
     if 'blstm' in model_config:
-        lstm = Bidirectional(LSTM(64), input_shape=(look_back, 92))(inp)
+        lstm = Bidirectional(LSTM(64), input_shape=(look_back, X.shape[2]))(inp)
     elif 'lstm' in model_config:
-        lstm = LSTM(64, input_shape=(look_back, 92))(inp)
+        lstm = LSTM(64, input_shape=(look_back, X.shape[2]))(inp)
     else:
         raise ValueError('network type not supported')
 
