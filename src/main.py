@@ -32,12 +32,12 @@ def main(args):
 
     final_sample = X.shape[0]//DATA_AUGMENT_RATIO
 
-    # infectedSvrPred, deathsSvrPred, r0SvrPred = normalizer.inverse_transform(infectedSvrPred, deathsSvrPred, r0SvrPred)
-    # infectedAdaPred, deathsAdaPred, r0AdaPred = normalizer.inverse_transform(infectedAdaPred, deathsAdaPred, r0AdaPred)
-    # infectedRfPred, deathsRfPred, r0RfPred = normalizer.inverse_transform(infectedRfPred, deathsRfPred, r0RfPred)
-    # infectedMlpPred, deathsMlpPred, r0MlpPred = normalizer.inverse_transform(infectedSvrPred, deathsSvrPred, r0SvrPred)
-    # positiveTruth, deathsTruth, r0Truth = normalizer.inverse_transform(Y[:, 0], Y[:, 1], Y[:, 2])
-    positiveTruth, deathsTruth, r0Truth = Y[:, 0], Y[:, 1], Y[:, 2]
+    infectedSvrPred, deathsSvrPred, r0SvrPred = normalizer.inverse_transform(infectedSvrPred, deathsSvrPred, r0SvrPred)
+    infectedAdaPred, deathsAdaPred, r0AdaPred = normalizer.inverse_transform(infectedAdaPred, deathsAdaPred, r0AdaPred)
+    infectedRfPred, deathsRfPred, r0RfPred = normalizer.inverse_transform(infectedRfPred, deathsRfPred, r0RfPred)
+    infectedMlpPred, deathsMlpPred, r0MlpPred = normalizer.inverse_transform(infectedMlpPred, deathsMlpPred, r0MlpPred)
+    positiveTruth, deathsTruth, r0Truth = normalizer.inverse_transform(Y[:, 0], Y[:, 1], Y[:, 2])
+    # positiveTruth, deathsTruth, r0Truth = Y[:, 0], Y[:, 1], Y[:, 2]
 
     f, ax = plt.subplots(3, 1, sharex=True, figsize=(10, 7))
 
@@ -62,13 +62,14 @@ def main(args):
     ax[2].plot(r0RfPred[:final_sample], c='r', label='rf_predicted')
     ax[2].plot(r0MlpPred[:final_sample], c='g', label='mlp_predicted')
     ax[2].plot(r0AdaPred[:final_sample], c='k', label='ada_predicted')
-    ax[2].plot(r0SvrPred[:final_sample], c='m', label='ada_predicted')
+    ax[2].plot(r0SvrPred[:final_sample], c='m', label='svr_predicted')
     ax[2].plot(r0Truth[:final_sample], c='b', label='truth')
     ax[2].set_ylabel('R0')
     ax[2].grid('on')
     ax[2].legend()
 
     plt.xticks(range(0, len(dates[1:]), 7), dates[1::7], rotation=90)
+    plt.tight_layout()
     plt.savefig('images/allpredictions.png')
     plt.show()
 
