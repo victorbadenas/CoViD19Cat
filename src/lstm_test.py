@@ -22,7 +22,7 @@ model_config = sys.argv[1]
 if not os.path.exists('./checkpoints/'):
     os.mkdir('./checkpoints/')
 
-seed = 0  # np.random.randint(0, 100000)
+seed = 0
 np.random.seed(seed)
 tf.random.set_seed(seed)
 
@@ -162,6 +162,7 @@ for i, l in enumerate(loss):
     plt.plot(l, label=f'fold {i}')
 plt.grid('on')
 plt.legend()
+plt.tight_layout()
 plt.savefig(f'../images/{model_config}.loss.png')
 plt.show()
 
@@ -169,10 +170,23 @@ pred = model.predict(X[:X.shape[0]//3])
 pred = np.array(pred).squeeze(-1).transpose()
 truth = Y[:X.shape[0]//3]
 
+truthopos, truthdea, truthr0 = normalizer.inverse_transform(truth[:, 0], truth[:, 1], truth[:, 2])
+predpos, preddea, predr0 = normalizer.inverse_transform(pred[:, 0], pred[:, 1], pred[:, 2])
+truth = np.hstack([truthopos, truthdea, truthr0])
+pred = np.hstack([predpos, preddea, predr0])
+
+import datetime
+base = datetime.datetime.strptime('2020-'+dates[0], "%Y-%m-%d")
+date_list = [base + datetime.timedelta(days=x) for x in range(pred.shape[0])]
+date_list = list(map(lambda x: x.strftime("%Y-%m-%d"), date_list))
+
 f, ax = plt.subplots(3, 1, figsize=(10, 6))
 for i in range(truth.shape[1]):
     ax[i].plot(pred[:,i], c='g')
     ax[i].plot(truth[:, i], c='k')
     ax[i].grid('on')
+plt.xticks(range(0, len(date_list[1:]), 7), date_list[1::7], rotation=90)
+plt.xlabel('date')
+plt.tight_layout()
 plt.savefig(f'../images/{model_config}.alldata.png')
 plt.show()

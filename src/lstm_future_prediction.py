@@ -80,6 +80,11 @@ for day in range(numdays):
     prev_sample = np.vstack([future_day, prev_sample[:-1]])
     y_pred = np.vstack([y_pred, future_day])
 
+truthopos, truthdea, truthr0 = normalizer.inverse_transform(Y[:, 0], Y[:, 1], Y[:, 2])
+predpos, preddea, predr0 = normalizer.inverse_transform(y_pred[:, 0], y_pred[:, 1], y_pred[:, 2])
+Y = np.hstack([truthopos, truthdea, truthr0])
+y_pred = np.hstack([predpos, preddea, predr0])
+
 import datetime
 base = datetime.datetime.strptime('2020-'+dates[0], "%Y-%m-%d")
 date_list = [base + datetime.timedelta(days=x) for x in range(y_pred.shape[0])]
@@ -95,5 +100,6 @@ for i in range(Y.shape[1]):
     ax[i].legend()
 plt.xticks(range(0, len(date_list[1:]), 7), date_list[1::7], rotation=90)
 plt.xlabel('date')
+plt.tight_layout()
 plt.savefig(f'../images/{model_config}.{numdays}extension.png')
 plt.show()
