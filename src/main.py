@@ -1,5 +1,6 @@
 import argparse
 import logging
+import pandas as pd
 from pathlib import Path
 from dataRetriever import DataRetriever
 from utils import set_logger, show_parameters
@@ -14,8 +15,8 @@ DATA_AUGMENT_RATIO = 3
 def main(args):
 
     logging.info(f"Downloading data from ID: {args.ids[0]}".center(80, '*'))
-    data_pos = DataRetriever(args.ids[0])()
-    data_death = DataRetriever(args.ids[1])()
+    data_pos = pd.read_csv('data/jj6z-iyrp/2020-12-30.csv', index_col=0)
+    data_death = pd.read_csv('data/uqk7-bf9s/2020-12-30.csv', index_col=0)
     dataset = preprocessData(data_pos, data_death)
     normalizer = customNormalizer()
     data, dates = normalizer.normalizeData(dataset)
