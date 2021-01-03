@@ -16,7 +16,7 @@ This repository contains the code used to perform the experiments in the `Covid1
 - numpy
 - unidecode
 
-## How to run :man_running: :snake:
+## How to run :running_man: :snake:
 
 Create a python environment with the required packages:
 
