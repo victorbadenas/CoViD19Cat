@@ -180,7 +180,7 @@ base = datetime.datetime.strptime('2020-'+dates[0], "%Y-%m-%d")
 date_list = [base + datetime.timedelta(days=x) for x in range(pred.shape[0])]
 date_list = list(map(lambda x: x.strftime("%Y-%m-%d"), date_list))
 
-f, ax = plt.subplots(3, 1, figsize=(10, 6))
+f, ax = plt.subplots(3, 1, figsize=(10, 6), sharex=True)
 for i in range(truth.shape[1]):
     ax[i].plot(pred[:,i], c='g')
     ax[i].plot(truth[:, i], c='k')
